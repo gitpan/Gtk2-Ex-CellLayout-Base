@@ -1,3 +1,4 @@
+Changes
 COPYING
 debian/changelog
 debian/compat
@@ -5,8 +6,10 @@ debian/control
 debian/copyright
 debian/rules
 debian/watch
+examples/builder.pl
 examples/cellview.pl
 lib/Gtk2/Ex/CellLayout/Base.pm
+lib/Gtk2/Ex/CellLayout/BuildAttributes.pm
 Makefile.PL
 MANIFEST			This list of files
 README

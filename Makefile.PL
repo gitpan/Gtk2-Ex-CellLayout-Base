@@ -56,9 +56,9 @@ lint:
 	podchecker lib/Gtk2/Ex/CellLayout/Base.pm
 
 myman:
-	rm -f MANIFEST
+	mv MANIFEST MANIFEST.old
 	touch SIGNATURE
-	make manifest
+	(make manifest 2>&1; diff -u MANIFEST.old MANIFEST) |less
 
 CellLayout-Base.html: lib/Gtk2/Ex/CellLayout/Base.pm Makefile
 	-perl -MPod::Simple::HTML -e Pod::Simple::HTML::go \
@@ -89,6 +89,16 @@ copyright-years-check: Gtk2-Ex-CellLayout-Base-$(VERSION).tar.gz
 	    fi; \
 	  done; \
 	  exit $$result)
+
+diff-prev:
+	rm -rf diff.tmp
+	mkdir diff.tmp
+	cd diff.tmp \
+	&& tar xfz ../$(NAME)-`expr $(VERSION) - 1`.tar.gz \
+	&& tar xfz ../$(NAME)-$(VERSION).tar.gz
+	-cd diff.tmp; diff -ur $(NAME)-`expr $(VERSION) - 1` \
+	                       $(NAME)-$(VERSION) >tree.diff
+	-less diff.tmp/tree.diff
 
 MAKE_FRAG
 }

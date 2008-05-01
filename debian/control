@@ -9,8 +9,7 @@ Bugs: mailto:user42@zip.com.au
 
 Package: libgtk2-ex-celllayout-base-perl
 Architecture: all
-Depends: libgtk2-perl, libtime-hires-perl
-Suggests: libdatetime-timezone-perl
+Depends: libgtk2-perl, libscope-guard-perl
 Description: Basic Gtk2::CellLayout interface implementation
  Gtk2::Ex::Celllayout::Base provides a basic set of functions for use
  by new data viewer widgets written in Perl and wanting to implement

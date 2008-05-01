@@ -17,8 +17,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 11;
-
+use Test::More tests => 13;
 
 package MyViewer;
 use strict;
@@ -37,6 +36,9 @@ sub PACK_START {
 
 package main;
 use Gtk2;
+
+ok ($Gtk2::Ex::CellLayout::Base::VERSION >= 1);
+ok (Gtk2::Ex::CellLayout::Base->VERSION >= 1);
 
 {
   my $viewer = MyViewer->new;

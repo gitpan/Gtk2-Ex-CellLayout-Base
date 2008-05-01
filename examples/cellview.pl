@@ -41,7 +41,7 @@ use base 'Gtk2::Ex::CellLayout::Base';
 
 use Glib::Object::Subclass
   Gtk2::DrawingArea::,
-  interfaces => [ 'Gtk2::CellLayout' ],
+  interfaces => [ 'Gtk2::CellLayout', 'Gtk2::Buildable' ],
   signals => { size_request => \&_do_size_request,
                expose_event => \&_do_expose_event,
              },

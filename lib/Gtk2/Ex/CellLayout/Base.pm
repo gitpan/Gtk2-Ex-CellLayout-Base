@@ -23,8 +23,11 @@ use List::Util;
 use Scope::Guard;
 use Gtk2;
 
-our $VERSION = 1;
+our $VERSION = 2;
 
+
+#------------------------------------------------------------------------------
+# Gtk2::CellLayout interface functions
 
 # gtk_cell_layout_pack_start
 #
@@ -122,7 +125,7 @@ sub GET_CELLS {
 
 
 #------------------------------------------------------------------------------
-# other functions
+# extra functions
 
 # For setting cell data, GtkCellView, GtkIconView and GtkTreeViewColumn all
 # first apply attributes then run the function, so do the same here.
@@ -172,7 +175,7 @@ sub _get_cellinfo_for_cell {
 
 
 # Not yet 100% certain about these "changed" overridable call-out methods,
-# it's probably going to be like the following ...
+# it's maybe perhaps possibly going to be like the following ...
 
 sub _cellinfo_list_changed {
   my ($self) = @_;
@@ -220,22 +223,52 @@ sub _cellinfo_attributes_changed {
 # =back
 
 
+#------------------------------------------------------------------------------
+# Gtk2::Buildable interface functions
+
+# This is the same as _gtk_cell_layout_buildable_add_child(), in particular
+# as per that function it always does "pack_start" and false for the expand
+# parameter.
+#
+sub ADD_CHILD {
+  my ($self, $builder, $child, $type) = @_;
+  $self->pack_start ($child, 0);
+}
+
+# In a <child>...</child> block under one of our new viewer widget, we
+# handle <attributes>...</attributes> to make add_attributes calls.
+#
+# $self is a viewer widget, ie. someone using us, and $child is the
+# Gtk2::CellRenderer child being added to the viewer.
+#
+sub CUSTOM_TAG_START {
+  my ($self, $builder, $child, $tagname) = @_;
+  if ($child && $tagname eq 'attributes') {
+    require Gtk2::Ex::CellLayout::BuildAttributes;
+    return Gtk2::Ex::CellLayout::BuildAttributes->new (cell_layout => $self,
+                                                       cell_renderer=> $child);
+  } else {
+    return undef;
+  }
+}
+
+
 1;
 __END__
 
 =head1 NAME
 
-Gtk2::Ex::CellLayout::Base -- basic Gtk2::CellLayout functions
+Gtk2::Ex::CellLayout::Base -- basic Gtk2::CellLayout implementation functions
 
 =head1 SYNOPSIS
 
- package MyNewStyleViewer;
+ package MyNewViewer;
  use Gtk2;
  use base 'Gtk2::Ex::CellLayout::Base';
 
  use Glib::Object::Subclass
   Gtk2::Widget::,
-  interfaces => [ 'Gtk2::CellLayout' ],
+  interfaces => [ 'Gtk2::CellLayout', 'Gtk2::Buildable' ],
   properties => [ ... ];
 
  sub my_expose {
@@ -341,12 +374,60 @@ and the height is the maximum among them.  It could look like
       $requisition->width ($total_width);
       $requisition->height ($max_height);
     }
-        
+
 An C<expose> handler will be a little more complicated, firstly the cells
 shouldn't drawn in C<cellinfo_list> order, but instead the C<pack_start>
 ones from the left, then the C<pack_end> ones from the right.  And the
 C<expand> flag is meant to indicate which cells (if any) should grow to fill
 available space when there's more than needed.
+
+=head1 BUILDABLE INTERFACE
+
+C<Gtk2::Ex::CellLayout::Base> provides the following functions for use by a
+viewer widget also implementing the C<Gtk2::Buildable> interface.
+
+    ADD_CHILD
+    CUSTOM_TAG_START
+
+To use them you must put C<"Gtk2::Buildable"> in your C<interfaces> list
+along with C<Gtk2::CellLayout> (as shown in L</SYNOPSIS> above).  (If you
+don't then you can still create a viewer object with buildable, but not add
+renderers as "children".)  As with the CellLayout functions above you can
+override with your own versions and chain (or not) with C<SUPER> in the
+usual way.
+
+The functions implement the same syntax as the core widgets like
+C<Gtk2::TreeViewColumn>.  Renderers are added to layout objects with
+C<< <child> >>, and after the C<< <object> >> form an C<< <attributes> >>
+does the equivalent of the C<add_attribute> setups.  The C<GtkTreeView>
+documentation has an example of C<GtkTreeViewColumn>.  Here's another with a
+hypothetical C<MyNewViewer> class,
+
+    <object class="MyNewViewer" id="myviewer">
+      <property name="model">myliststore</property>
+      <child>
+        <object class="GtkCellRendererText" id="myrenderer">
+          <property name="underline">single</property>
+        </object>
+        <attributes>
+          <attribute name="text">0</attribute>
+        </attributes>
+      </child>
+    </object>
+
+A renderer "child" added this way is added using C<pack_start> and "expand"
+false.  This is the same as the core widgets, and like the core there's
+currently no way to instead use C<pack_end> or expand.  (C<child> has a
+C<type> option which might be pressed into service, or C<GtkBox> has
+C<expand> etc as settable properties, but we'd prefer to let the Gtk core
+take the lead on that.)
+
+As of Gtk2-Perl 1.181 there's no chaining up to tag handlers in widget
+superclasses, which means a buildable interface like this loses anything
+those superclasses add to C<GtkBuilder>'s standard forms.  In particular for
+example you loose <accelerator> and <accessibility> from C<GtkWidget>.  Not
+sure how bad that is in practice, hopefully a future Gtk2-Perl will allow
+chaining, or do it automatically.
 
 =head1 OTHER NOTES
 
@@ -381,7 +462,7 @@ to skip the opposite ones as you go.  Otherwise a couple of greps and
 reverse gives you all elements in display order if you really want that.
 Eg.
 
-  my @disps = (grep {$_->{'pack'} eq 'start'} @$cellinfo_list,
+  my @disps = (grep ({$_->{'pack'} eq 'start'} @$cellinfo_list),
                reverse grep {$_->{'pack'} eq 'end'} @$cellinfo_list);
 
 The C<GET_CELLS> method is always provided but only used if Gtk2-Perl was
