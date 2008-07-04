@@ -19,7 +19,7 @@
 # This example defines a viewer class and then in the mainline creates an
 # instance of it using Gtk2::Builder.  Basically if you're sick of writing
 # bloated and repetitive code to create widgets you can write even more
-# verbose and even more repetitive XML.  :-)
+# bloateder and even more repetitive XML!  :-)
 #
 # The functions for buildable support in the new viewer class are provided
 # by Gtk2::Ex::CellLayout::Base, so all the class must do is remember
@@ -67,7 +67,6 @@ sub _do_size_request {
   if (DEBUG) { print "$self size_request\n"; }
 
   my $total_height = 0;
-  my %col_width;
 
   my $cellinfo_list = $self->{'cellinfo_list'};
   foreach my $cellinfo (@$cellinfo_list) {

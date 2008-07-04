@@ -18,3 +18,4 @@ with Gtk2-Ex-CellLayout-Base.  If not, see <http://www.gnu.org/licenses/>.
 
 Version 1 - the first version
 Version 2 - add Gtk2::Buildable
+Version 3 - fixes for _set_cell_data, and use my FreezeNotify there

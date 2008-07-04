@@ -6,6 +6,8 @@ debian/control
 debian/copyright
 debian/rules
 debian/watch
+devel/box-pack.pl
+devel/cellview-pack.pl
 examples/builder.pl
 examples/cellview.pl
 lib/Gtk2/Ex/CellLayout/Base.pm

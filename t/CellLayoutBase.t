@@ -17,7 +17,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 13;
+use Test::More tests => 16;
 
 package MyViewer;
 use strict;
@@ -46,7 +46,8 @@ ok (Gtk2::Ex::CellLayout::Base->VERSION >= 1);
   $viewer->pack_start ($renderer, 0);
 
   is ($viewer->{'myviewer-subclass'}, 'hello from MyViewer');
-  is_deeply ([$viewer->GET_CELLS], [$renderer]);
+  is_deeply ([$viewer->GET_CELLS], [$renderer],
+             'GET_CELLS one renderer');
 }
 
 {
@@ -92,13 +93,40 @@ ok (Gtk2::Ex::CellLayout::Base->VERSION >= 1);
   my $viewer = MyViewer->new;
   my $renderer = Gtk2::CellRendererText->new;
   $viewer->pack_start ($renderer, 0);
-  is ($viewer->{'cellinfo_list'}->[0]->{'expand'}, '');
+  ok (! $viewer->{'cellinfo_list'}->[0]->{'expand'},
+     'expand false');
 }
 {
   my $viewer = MyViewer->new;
   my $renderer = Gtk2::CellRendererText->new;
   $viewer->pack_start ($renderer, 'true');
-  is ($viewer->{'cellinfo_list'}->[0]->{'expand'}, 1);
+  ok ($viewer->{'cellinfo_list'}->[0]->{'expand'},
+      'expand true');
+}
+
+{
+  my $liststore = Gtk2::ListStore->new ('Glib::String');
+  $liststore->set_value ($liststore->append, 0 => 'Foo');
+  my $viewer = MyViewer->new;
+  $viewer->{'model'} = $liststore;
+  my $renderer = Gtk2::CellRendererText->new;
+  $viewer->pack_start ($renderer, 1);
+
+  my $iter = $liststore->get_iter_first;
+  $viewer->_set_cell_data ($iter, weight => 123);
+  is ($renderer->get('weight'), 123,
+      'extra setting through _set_cell_data');
+
+  $viewer->add_attribute ($renderer, text => 0);
+  $viewer->_set_cell_data ($iter);
+  is ($renderer->get('text'), 'Foo',
+      'attribute setting from add_attribute()');
+
+  $viewer->clear_attributes ($renderer);
+  $renderer->set (text => 'Blah');
+  $viewer->_set_cell_data ($iter);
+  is ($renderer->get('text'), 'Blah',
+      'attribute setting gone after clear_attributes()');
 }
 
 exit 0;

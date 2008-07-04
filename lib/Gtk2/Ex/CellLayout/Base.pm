@@ -20,10 +20,10 @@ use strict;
 use warnings;
 use Carp;
 use List::Util;
-use Scope::Guard;
 use Gtk2;
+use Glib::Ex::FreezeNotify;
 
-our $VERSION = 2;
+our $VERSION = 3;
 
 
 #------------------------------------------------------------------------------
@@ -95,7 +95,7 @@ sub SET_CELL_DATA_FUNC {
 sub CLEAR_ATTRIBUTES {
   my ($self, $cell) = @_;
   my $cellinfo =  $self->_get_cellinfo_for_cell ($cell);
-  $cellinfo->{'attributes'} = {};
+  %{$cellinfo->{'attributes'}} = ();
   $self->_cellinfo_attributes_changed;
 }
 
@@ -127,38 +127,48 @@ sub GET_CELLS {
 #------------------------------------------------------------------------------
 # extra functions
 
-# For setting cell data, GtkCellView, GtkIconView and GtkTreeViewColumn all
-# first apply attributes then run the function, so do the same here.
+# When setting cell data, GtkCellView, GtkIconView and GtkTreeViewColumn all
+# apply attributes first then run the function, so do the same here.
 #
-# The freeze/thaw too is the same as the core viewers.  Not sure why it's
-# needed, maybe just a general principle of holding back advertising
-# multiple property changes until all are done.
+# The freeze_notify across the attributes and func is the same as the core
+# viewers.  Don't know what it's for, maybe just the general principle of
+# holding back notifying a group of property changes until all are done.
 #
-# The plain hash table used for $cellinfo->{'attributes'} will give the
-# property name keys in no particular order.  That should be fine.  The
-# freeze/thaw may even be a good thing in this case, if it stops anyone
-# imagining they might see properties change successively in the order the
-# "add_attributes" were given.
+# The plain hash used for $cellinfo->{'attributes'} gives the property name
+# keys in no particular order.  That should be fine, nobody should expect a
+# particular order.
 #
-# The Scope::Guard for the thaw protects against an error throw leaving the
-# renderer permanently frozen.  Probably there shouldn't be any errors, but
-# if something strange happends don't want it wedged.  (Even if it's fairly
-# unlikely anyone would be listening to notifies out of a mere renderer.)
+# The FreezeNotify mechanism protects against an error throw leaving the
+# renderer permanently frozen.  Errors could arise from dodgy value types to
+# the $cell->set(), and can arise easily from application code in $func.
+#
+# Freezing is not done if there's no attributes to set and no func to call.
+# This will be unusual, but it saves a couple of cycles on a purely fixed
+# renderer like for instance a pixbuf icon.
 #
 sub _set_cell_data {
-  my ($self, $iter) = @_;
+  my ($self, $iter, @extra_settings) = @_;
   my $model = $self->{'model'} or return;
 
   foreach my $cellinfo (@{$self->{'cellinfo_list'}}) {
     my $cell = $cellinfo->{'cell'};
+    my $freezer;
 
     if (my $ahash = $cellinfo->{'attributes'}) {
-      $cell->freeze_notify;
-      my $guard = Scope::Guard->new (sub { $cell->thaw_notify });
-      $cell->set (map { ($_ => $model->get_value($iter,$ahash->{$_})) }
-                  keys %$ahash);
+      if (my @settings = %$ahash) {
+        $freezer = Glib::Ex::FreezeNotify->new ($cell);
+        for (my $i = 1; $i < @settings; $i += 2) {
+          $settings[$i] = $model->get_value ($iter, $settings[$i]);
+        }
+        $cell->set (@settings);
+      }
+    }
+    if (@extra_settings) {
+      $freezer ||= Glib::Ex::FreezeNotify->new ($cell);
+      $cell->set (@extra_settings);
     }
     if (my $func = $cellinfo->{'datafunc'}) {
+      $freezer ||= Glib::Ex::FreezeNotify->new ($cell);
       $func->($self, $cell, $model, $iter, $cellinfo->{'datafunc_userdata'});
     }
   }
@@ -174,8 +184,9 @@ sub _get_cellinfo_for_cell {
 
 
 
-# Not yet 100% certain about these "changed" overridable call-out methods,
-# it's maybe perhaps possibly going to be like the following ...
+# Not yet 100% certain about these "changed" overridable call-out methods.
+# It's maybe, perhaps, possibly, kinda, sorta going to be like the following
+# ...
 
 sub _cellinfo_list_changed {
   my ($self) = @_;
@@ -274,7 +285,7 @@ Gtk2::Ex::CellLayout::Base -- basic Gtk2::CellLayout implementation functions
  sub my_expose {
    my ($self, $event) = @_;
    $self->_set_cell_data;
-   foreach my $cellinfo (@$self->{'cellinfo_list'}) {
+   foreach my $cellinfo (@{$self->{'cellinfo_list'}}) {
      next unless $cell->{'pack'} eq 'start';
      $cellinfo->{'cell'}->render (...);
    }
@@ -297,21 +308,26 @@ C<Gtk2::CellLayout> interface.  This means
     GET_CELLS
 
 The functions maintain a list of C<Gtk2::CellRenderer> objects packed into
-the viewer widget, with associated attribute settings or data setup
-function.
+the viewer widget by the application, with associated attribute settings or
+data setup function.
 
 C<Gtk2::Ex::CellLayoutBase> is designed as a multiple-inheritance superclass
-to be brought in with C<use base> as in the synopsis above (see L<base>).
-Because of this you can enhance it or override it by writing your own
-versions of the functions offered, chaining (or not) to the originals with
-C<SUPER> in the usual way.
+to be brought in with C<use base> per the synopsis above (see L<base>).  You
+can enhance it or override it by writing your own versions of the functions
+offered, chaining (or not) to the originals with C<SUPER> in the usual way.
 
 =head1 CELL INFO LIST
 
 C<Gtk2::Ex::CellLayout::Base> keeps information on the added cell renderers
 in C<< $self->{'cellinfo_list'} >> on the viewer widget.  This field is an
-array reference, created when first needed.  Each element in the array is a
-hash reference, with the hash containing
+array reference, created when first needed, and each element in the array is
+a hash reference.
+
+    [ { cell => $renderer1, ... },
+      { cell => $renderer2, ... },
+      ... ]
+
+The element fields are
 
     cell               Gtk2::CellRenderer object
     pack               string 'start' or 'end'
@@ -321,19 +337,19 @@ hash reference, with the hash containing
     datafunc_userdata  any scalar
 
 C<cell> is the renderer object added in by C<pack_start> or C<pack_end>, and
-C<expand> the flag passed in those calls.  The C<pack> field is C<"start">
-or C<"end"> according to which function was used.  Those C<"start"> and
+C<expand> is the flag passed in those calls.  The C<pack> field is
+C<"start"> or C<"end"> according to which function was used.  C<"start"> and
 C<"end"> values are per the C<Gtk2::PackType> enumeration, though that enum
-doesn't often arise in the context of a viewer widget.
+doesn't normally arise in the context of a viewer widget.
 
 C<attributes> is a hash table of property name to column number built by
-C<add_attribute> or C<set_attributes>.  Likewise C<datafunc> and
-C<datafunc_userdata> from C<set_cell_data_func>.  Both are used when
-preparing the renderers to draw a particular row of the C<Gtk2::TreeModel>.
+C<add_attribute> or C<set_attributes>.  C<datafunc> and C<datafunc_userdata>
+come from C<set_cell_data_func>.  All these are used when preparing the
+renderers to draw a particular row of the C<Gtk2::TreeModel>.
 
 The widget C<size_request> and C<expose> operations are the two most obvious
 places the cell information is needed.  Both will want to prepare the
-renderers with data from the model then ask their size and in the case of
+renderers with data from the model, then ask the size, and in the case of
 C<expose> do some drawing.  The following function is designed to prepare
 the renderers
 
@@ -360,14 +376,17 @@ and the height is the maximum among them.  It could look like
 
     sub do_size_request {
       my ($self, $requisition) = @_;
-      $iter = $self->{'model'}->get_nth_iter ($self->{'rownum'});
-      my $total_width = 0;
-      my $max_height = 0;
+      my $model = $self->{'model'};
+      my $iter = $model->iter_nth_child (undef, $self->{'rownum'});
 
       $self->_set_cell_data ($iter);
+
+      my $total_width = 0;
+      my $max_height = 0;
       foreach my $cellinfo (@{$self->{'cellinfo_list'}}) {
         my $cell = $cellinfo->{'cell'};
-        my (undef,undef, $width,$height) = $cell->get_size($self,undef);
+        my (undef,undef, $width,$height)
+             = $cell->get_size ($self, undef);
         $total_width += $width;
         $max_height = max ($max_height, $height);
       }
@@ -375,11 +394,11 @@ and the height is the maximum among them.  It could look like
       $requisition->height ($max_height);
     }
 
-An C<expose> handler will be a little more complicated, firstly the cells
-shouldn't drawn in C<cellinfo_list> order, but instead the C<pack_start>
-ones from the left, then the C<pack_end> ones from the right.  And the
-C<expand> flag is meant to indicate which cells (if any) should grow to fill
-available space when there's more than needed.
+An C<expose> handler is a little more complicated, firstly the cells
+shouldn't drawn in C<cellinfo_list> order, but instead the C<start> ones
+from the left, then the C<end> ones from the right.  And the C<expand> flag
+is meant to indicate which cells (if any) should grow to fill available
+space when there's more than needed.
 
 =head1 BUILDABLE INTERFACE
 
@@ -390,16 +409,16 @@ viewer widget also implementing the C<Gtk2::Buildable> interface.
     CUSTOM_TAG_START
 
 To use them you must put C<"Gtk2::Buildable"> in your C<interfaces> list
-along with C<Gtk2::CellLayout> (as shown in L</SYNOPSIS> above).  (If you
+along with C<Gtk2::CellLayout> (as shown in L</SYNOPSIS> above).  If you
 don't then you can still create a viewer object with buildable, but not add
-renderers as "children".)  As with the CellLayout functions above you can
+renderers as "children".  As with the CellLayout functions above you can
 override with your own versions and chain (or not) with C<SUPER> in the
 usual way.
 
 The functions implement the same syntax as the core widgets like
 C<Gtk2::TreeViewColumn>.  Renderers are added to layout objects with
 C<< <child> >>, and after the C<< <object> >> form an C<< <attributes> >>
-does the equivalent of the C<add_attribute> setups.  The C<GtkTreeView>
+does the equivalent of C<add_attribute()> setups.  The C<GtkTreeView>
 documentation has an example of C<GtkTreeViewColumn>.  Here's another with a
 hypothetical C<MyNewViewer> class,
 
@@ -415,64 +434,84 @@ hypothetical C<MyNewViewer> class,
       </child>
     </object>
 
-A renderer "child" added this way is added using C<pack_start> and "expand"
-false.  This is the same as the core widgets, and like the core there's
-currently no way to instead use C<pack_end> or expand.  (C<child> has a
-C<type> option which might be pressed into service, or C<GtkBox> has
-C<expand> etc as settable properties, but we'd prefer to let the Gtk core
-take the lead on that.)
+A renderer "child" added this way uses C<pack_start> with "expand" false.
+This is the same as the core widgets, and like the core there's currently no
+way to instead use C<pack_end> or expand.  (C<child> has a C<type> option
+which might be pressed into service, or C<GtkBox> has C<expand> etc as
+settable properties, but we'd prefer to let the Gtk core take the lead on
+that.)
 
-As of Gtk2-Perl 1.181 there's no chaining up to tag handlers in widget
+As of Gtk2-Perl 1.183 there's no chaining up to tag handlers in widget
 superclasses, which means a buildable interface like this loses anything
 those superclasses add to C<GtkBuilder>'s standard forms.  In particular for
-example you loose <accelerator> and <accessibility> from C<GtkWidget>.  Not
-sure how bad that is in practice, hopefully a future Gtk2-Perl will allow
-chaining, or do it automatically.
+example you loose C<< <accelerator> >> and C<< <accessibility> >> from
+C<GtkWidget>.  Not sure how bad that is in practice.  Hopefully a future
+Gtk2-Perl will allow chaining, or do it automatically.
 
 =head1 OTHER NOTES
 
 The C<cellinfo_list> idea is based on the similar cell info lists maintained
 inside the core C<Gtk2::TreeViewColumn>, C<Gtk2::CellView> and
-C<Gtk2::IconView> widgets.  With elements as hashes there's room for widget
+C<Gtk2::IconView> widgets.  Elements are hashes so there's room for widget
 code to hang extra information, like the "editing" flag of C<IconView>, or
 the focus flag and calculated width C<TreeViewColumn> keeps.
 
 The C<_set_cell_data> function provided above is also similar to what the
 core widgets do.  C<Gtk2::TreeViewColumn> even makes its version of that
-public as C<cell_set_cell_data>.  It's probably equally valid to setup one
-renderer at a time as it's used, rather than all at once; so perhaps in the
-future C<Gtk2::Ex::CellLayout::Base> might offer something for that, maybe
-even as a method on the C<cellinfo_list> elements if they were blessed to
-become objects.
+public as C<< $column->cell_set_cell_data >>.  It's probably equally valid
+to setup one renderer at a time as used, rather than all at once; so perhaps
+in the future C<Gtk2::Ex::CellLayout::Base> might offer something for that,
+maybe even as a method on the C<cellinfo_list> elements if they became
+objects as such.
 
 The display layout intended by C<pack_start> and C<pack_end> isn't well
 described in the C<GtkCellLayout> documentation, but it's the same as
-C<GtkBox> so see there for details.  It might be wondered why
-C<cellinfo_list> isn't maintained with starts and ends separated in the
-first place, since that's what will be wanted for drawing.  The reason is
-the C<reorder> method which works in terms of renderers added in sequence,
-with C<pack_start> and C<pack_end> together, counting from 0.  This makes
-more sense in C<GtkBox> where pack type can be changed later (something
-C<CellLayout> doesn't do).
+C<GtkBox> so see there for details.  You might wonder why C<cellinfo_list>
+isn't maintained with starts and ends separated in the first place, since
+that's what will be wanted for drawing.  The reason is the C<reorder> method
+which works in terms of renderers in sequence, with C<pack_start> and
+C<pack_end> together, counting from 0.  This makes more sense in C<GtkBox>
+where pack type can be changed later (something C<CellLayout> doesn't do).
 
 Perhaps in the future C<Gtk2::Ex::CellLayout::Base> could offer functions to
 pick the start elements out from the ends.  But if your expose code uses two
 loops in the style of say the core C<Gtk2::CellView> then it's just as easy
 to skip the opposite ones as you go.  Otherwise a couple of greps and
-reverse gives you all elements in display order if you really want that.
-Eg.
+reverse gives you all elements in display order if you want that.  Eg.
 
   my @disps = (grep ({$_->{'pack'} eq 'start'} @$cellinfo_list),
                reverse grep {$_->{'pack'} eq 'end'} @$cellinfo_list);
 
-The C<GET_CELLS> method is always provided but only used if Gtk2-Perl was
-compiled against Gtk version 2.12 or later where the
+The C<GET_CELLS> method is always provided, but it's only used if Gtk2-Perl
+was compiled against Gtk version 2.12 or higher which is when the
 C<gtk_cell_layout_get_cells> function was introduced.  Within viewer widget
 code if you want all the renderers (which is simply the C<cell> fields
-picked out of C<cellinfo_list>) then it's suggested you call capital
-C<GET_CELLS> rather than worry whether the lowercase C<get_cells> is
-available or not.
+picked out of C<cellinfo_list>) then you can call capital C<GET_CELLS>
+rather than worry whether lowercase C<get_cells> is available or not.
 
 =head1 SEE ALSO
 
 C<Gtk2::CellLayout>, C<Gtk2::CellRenderer>
+
+=head1 HOME PAGE
+
+L<http://www.geocities.com/user42_kevin/gtk2-ex-celllayout-base/index.html>
+
+=head1 LICENSE
+
+Copyright 2007, 2008 Kevin Ryde
+
+Gtk2-Ex-CellLayout-Base is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option) any
+later version.
+
+Gtk2-Ex-CellLayout-Base is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+Gtk2-Ex-CellLayout-Base.  If not, see L<http://www.gnu.org/licenses/>.
+
+=cut

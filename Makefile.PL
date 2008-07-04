@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU General Public License along
 # with Gtk2-Ex-CellLayout-Base.  If not, see <http://www.gnu.org/licenses/>.
 
+use strict;
+use warnings;
 use ExtUtils::MakeMaker;
 
 WriteMakefile
@@ -28,20 +30,19 @@ WriteMakefile
    SIGN         => 1,
 
    PREREQ_PM    => {
-                    # Need 1.180 or higher for Gtk2::CellLayout as a
+                    # Gtk2-Perl 1.180 or higher for Gtk2::CellLayout as a
                     # GInterface from Perl.  Strictly speaking this is a
                     # prereq only of widgets which use CellLayout::Base, not
-                    # ourself as such, but express it here to keep others
-                    # out of trouble.
-                    Gtk2 => 1.180,
+                    # of CellLayout::Base as such, but express it here to
+                    # keep others out of trouble.
+                    'Gtk2' => '1.180',
 
-                    # any version should be ok
-                    Scope::Guard => 0,
+                    # my Glib-Ex-ObjectBits
+                    'Glib::Ex::FreezeNotify' => 0,
 
-                    # Gtk2 requires perl 5.8 which has List::Util and
-                    # Scalar::Util builtin already actually
-                    Scalar::Util => 0,
-                    List::Util => 0,
+                    # actually Gtk2 requires perl 5.8 which has List::Util
+                    # builtin already
+                    'List::Util' => 0,
                    },
 
    clean        => { FILES => "CellLayout-Base.html" },
@@ -51,10 +52,6 @@ WriteMakefile
 sub MY::postamble {
   return <<'MAKE_FRAG';
 
-lint:
-	perl -MO=Lint lib/Gtk2/Ex/CellLayout/Base.pm
-	podchecker lib/Gtk2/Ex/CellLayout/Base.pm
-
 myman:
 	mv MANIFEST MANIFEST.old
 	touch SIGNATURE
@@ -63,6 +60,13 @@ myman:
 CellLayout-Base.html: lib/Gtk2/Ex/CellLayout/Base.pm Makefile
 	-perl -MPod::Simple::HTML -e Pod::Simple::HTML::go \
 	  lib/Gtk2/Ex/CellLayout/Base.pm >CellLayout-Base.html
+
+CHECKFILES = $(TO_INST_PM) t/*.t examples/*.pl devel/*.pl
+lint:
+	for i in $(CHECKFILES); do perl -MO=Lint $$i; done
+	podchecker    $(CHECKFILES)
+pc:
+	perlcritic $(CHECKFILES)
 
 # find files in the dist with mod times this year, but without this year in
 # the copyright line

@@ -15,27 +15,29 @@ not run its Makefile.PL or Build.PL.
 Hash: SHA1
 
 SHA1 8624bcdae55baeef00cd11d5dfcfa60f68710a02 COPYING
-SHA1 d3f24cfa64a60b81dd9b5062ac907e174f5d845f Changes
-SHA1 6c5ba055d26bbd35d9e243a66c6d24d92b3f0c43 MANIFEST
-SHA1 e998860458262483837be255b614a060cd46ff8c META.yml
-SHA1 8b04b9274aeb82723d8d5e74cf35dac310bf266a Makefile.PL
-SHA1 15e887ed19db8e725e6bd217ec4dac6be99f18f7 README
-SHA1 1b99218de465558f8184c5a4eadd3a1499b23053 debian/changelog
+SHA1 cccc5d4ba6a4d565695f05e503380470998931ca Changes
+SHA1 97ff2a8dba74097c411cbd8aeceb234b6414c6d5 MANIFEST
+SHA1 4ae939d570b03e8c1c5540c1180dd397bef1df3c META.yml
+SHA1 69e36710bc228f17a2a4ca0e0a522e1f5f329795 Makefile.PL
+SHA1 817ef628501483b1d892e2284dae3e501a98acc0 README
+SHA1 ad567baa5a0e706ea4bbaf5b5cea462bc022cc5f debian/changelog
 SHA1 1b6453892473a467d07372d45eb05abc2031647a debian/compat
-SHA1 79a818cdc33ffef7f7616c1af9dbcf161ea3df96 debian/control
+SHA1 95e599fe5e53900194ee13ac49cb9728753cef31 debian/control
 SHA1 56133eafc2343d01193dacc189ab4d3b39850852 debian/copyright
 SHA1 5f420c850e369abc77a7281443fbac718b827b67 debian/rules
 SHA1 fdeee5d47c706610af41454b6c24d5f2346481d9 debian/watch
-SHA1 7926846019d2320fa803b762f9f8997cf988e1e3 examples/builder.pl
+SHA1 7cf7a7e4fdfbde758f4713001992273d40b2c10b devel/box-pack.pl
+SHA1 87ecf91bf83b735d9346f593c3fc058d9a44349f devel/cellview-pack.pl
+SHA1 706d6b408c2f4d77b6771b6dd40d9cd8967deb5c examples/builder.pl
 SHA1 076561637b21fb17665da29a7320b9903ca0e785 examples/cellview.pl
-SHA1 1ebea8c77bc6f973051ca0fb39474f8aaeec7b2b lib/Gtk2/Ex/CellLayout/Base.pm
-SHA1 3591add211c456cc717525f109b805dbdfb7353c lib/Gtk2/Ex/CellLayout/BuildAttributes.pm
-SHA1 635ed9366750194cb2ad1f52cc5d3bc0ca35d009 t/CellLayoutBase.t
+SHA1 070d57f90cc64247aa64e7595e79c9ce7e1972f6 lib/Gtk2/Ex/CellLayout/Base.pm
+SHA1 0718471a09c8ac4f9d73a7985624e4ad3964e4e4 lib/Gtk2/Ex/CellLayout/BuildAttributes.pm
+SHA1 63800a42fc5e6358798f8b65b99dfbceb81ddf80 t/CellLayoutBase.t
 SHA1 a661a39e55a4127aecb1b97a631c4f01f7dce8c6 t/pod.t
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-iD8DBQFIF+cpLFMCIV9q3ToRAokEAJ9VLN4o1pwrx6AL49mO9RoKZpgUHQCdHU4k
-79+/f2+zfpkzbeGc596JIjo=
-=K1pU
+iD8DBQFIbU6/LFMCIV9q3ToRAvy6AJ9i28+IucXWBXTqYMpOWYQwKUE0DQCfeihM
+yJ6XSADS5sxBMKN4P6fnKnc=
+=chdI
 -----END PGP SIGNATURE-----

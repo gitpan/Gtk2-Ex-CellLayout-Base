@@ -68,7 +68,7 @@ __END__
 
 =head1 NAME
 
-Gtk2::Ex::CellLayout::BuildAttributes -- builder parser for renderer attributes
+Gtk2::Ex::CellLayout::BuildAttributes -- builder parser for cell renderer attributes
 
 =head1 SYNOPSIS
 
@@ -105,3 +105,26 @@ C<< $viewer->add_attribute (text => 0) >>.
 =head1 SEE ALSO
 
 C<Gtk2::Ex::CellLayout::Base>, C<Gtk2::CellLayout>, C<Gtk2::CellRenderer>
+
+=head1 HOME PAGE
+
+L<http://www.geocities.com/user42_kevin/gtk2-ex-celllayout-base/index.html>
+
+=head1 LICENSE
+
+Copyright 2007, 2008 Kevin Ryde
+
+Gtk2-Ex-CellLayout-Base is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option) any
+later version.
+
+Gtk2-Ex-CellLayout-Base is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+Gtk2-Ex-CellLayout-Base.  If not, see L<http://www.gnu.org/licenses/>.
+
+=cut
