@@ -1,12 +1,12 @@
 #!/usr/bin/perl
 
-# Copyright 2007, 2008 Kevin Ryde
+# Copyright 2007, 2008, 2009 Kevin Ryde
 
 # This file is part of Gtk2-Ex-CellLayout-Base.
 #
 # Gtk2-Ex-CellLayout-Base is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as published
-# by the Free Software Foundation; either version 2, or (at your option) any
+# by the Free Software Foundation; either version 3, or (at your option) any
 # later version.
 #
 # Gtk2-Ex-CellLayout-Base is distributed in the hope that it will be useful,
@@ -17,92 +17,51 @@
 # You should have received a copy of the GNU General Public License along
 # with Gtk2-Ex-CellLayout-Base.  If not, see <http://www.gnu.org/licenses/>.
 
+use 5.008;
 use strict;
 use warnings;
 use ExtUtils::MakeMaker;
+use lib 'inc';
+use MyMakeMakerExtras;
 
-WriteMakefile
+MyMakeMakerExtras::WriteMakefile
   (NAME         => 'Gtk2-Ex-CellLayout-Base',
    ABSTRACT     => 'Basic Gtk2::CellLayout interface implementation.',
    VERSION_FROM => 'lib/Gtk2/Ex/CellLayout/Base.pm',
    AUTHOR       => 'Kevin Ryde <user42@zip.com.au>',
    LICENSE      => 'gpl',
    SIGN         => 1,
+   MIN_PERL_VERSION => '5.008',
 
    PREREQ_PM    => {
+                    'Glib::Object::Subclass' => 0,
+
                     # Gtk2-Perl 1.180 or higher for Gtk2::CellLayout as a
                     # GInterface from Perl.  Strictly speaking this is a
                     # prereq only of widgets which use CellLayout::Base, not
                     # of CellLayout::Base as such, but express it here to
-                    # keep others out of trouble.
+                    # keep others out of trouble.  And the test suite
+                    # depends on it, as currently written.
+                    #
                     'Gtk2' => '1.180',
 
                     # my Glib-Ex-ObjectBits
                     'Glib::Ex::FreezeNotify' => 0,
-
-                    # actually Gtk2 requires perl 5.8 which has List::Util
-                    # builtin already
-                    'List::Util' => 0,
                    },
 
    clean        => { FILES => "CellLayout-Base.html" },
+
+   META_MERGE
+   => { resources
+        => { homepage
+             => 'http://user42.tuxfamily.org/gtk2-ex-celllayout-base/index.html',
+           },
+        optional_features
+        => { maximum_tests
+             => { description => 'Have "make test" do as much as possible.',
+                  requires => { 'Test::NoWarnings' => 0,
+                              },
+                },
+           },
+      },
   );
-
-
-sub MY::postamble {
-  return <<'MAKE_FRAG';
-
-myman:
-	mv MANIFEST MANIFEST.old
-	touch SIGNATURE
-	(make manifest 2>&1; diff -u MANIFEST.old MANIFEST) |less
-
-CellLayout-Base.html: lib/Gtk2/Ex/CellLayout/Base.pm Makefile
-	-perl -MPod::Simple::HTML -e Pod::Simple::HTML::go \
-	  lib/Gtk2/Ex/CellLayout/Base.pm >CellLayout-Base.html
-
-CHECKFILES = $(TO_INST_PM) t/*.t examples/*.pl devel/*.pl
-lint:
-	for i in $(CHECKFILES); do perl -MO=Lint $$i; done
-	podchecker    $(CHECKFILES)
-pc:
-	perlcritic $(CHECKFILES)
-
-# find files in the dist with mod times this year, but without this year in
-# the copyright line
-copyright-years-check: Gtk2-Ex-CellLayout-Base-$(VERSION).tar.gz
-	year=`date +%Y`; \
-	tar tvfz Gtk2-Ex-CellLayout-Base-$(VERSION).tar.gz \
-	| grep $$year- \
-	| sed 's:^.*Gtk2-Ex-CellLayout-Base-$(VERSION)/::' \
-	| (result=0; \
-	  while read i; do \
-	    case $$i in \
-	      '' | */ \
-	      | debian/changelog | debian/compat | debian/control \
-	      | COPYING | MANIFEST | SIGNATURE | META.yml \
-	      | t/pod.t) \
-	      continue ;; \
-	    esac; \
-	    if test -e "$(srcdir)/$$i"; then f="$(srcdir)/$$i"; \
-	    else f="$$i"; fi; \
-	    if ! grep -q "Copyright.*$$year" $$f; then \
-	      echo "$$i:1: this file"; \
-	      grep Copyright $$f; \
-	      result=1; \
-	    fi; \
-	  done; \
-	  exit $$result)
-
-diff-prev:
-	rm -rf diff.tmp
-	mkdir diff.tmp
-	cd diff.tmp \
-	&& tar xfz ../$(NAME)-`expr $(VERSION) - 1`.tar.gz \
-	&& tar xfz ../$(NAME)-$(VERSION).tar.gz
-	-cd diff.tmp; diff -ur $(NAME)-`expr $(VERSION) - 1` \
-	                       $(NAME)-$(VERSION) >tree.diff
-	-less diff.tmp/tree.diff
-
-MAKE_FRAG
-}

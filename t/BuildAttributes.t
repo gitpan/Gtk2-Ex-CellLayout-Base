@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2008, 2009 Kevin Ryde
+# Copyright 2009 Kevin Ryde
 
 # This file is part of Gtk2-Ex-CellLayout-Base.
 #
@@ -19,20 +19,21 @@
 
 use strict;
 use warnings;
-use Gtk2 '-init';
+use Gtk2::Ex::CellLayout::BuildAttributes;
+use Test::More tests => 5;
 
-my $toplevel = Gtk2::Window->new('toplevel');
-$toplevel->signal_connect (destroy => sub { Gtk2->main_quit });
+SKIP: { eval 'use Test::NoWarnings; 1'
+          or skip 'Test::NoWarnings not available', 1; }
 
-my $hbox = Gtk2::HBox->new (0, 0);
-$toplevel->add ($hbox);
+my $want_version = 4;
+cmp_ok ($Gtk2::Ex::CellLayout::BuildAttributes::VERSION, '>=', $want_version,
+        'VERSION variable');
+cmp_ok (Gtk2::Ex::CellLayout::BuildAttributes->VERSION,  '>=', $want_version,
+        'VERSION class method');
+{ ok (eval { Gtk2::Ex::CellLayout::BuildAttributes->VERSION($want_version); 1 }, "VERSION class check $want_version");
+  my $check_version = $want_version + 1000;
+  ok (! eval { Gtk2::Ex::CellLayout::BuildAttributes->VERSION($check_version); 1 }, "VERSION class check $check_version");
+}
 
-$hbox->pack_start (Gtk2::Label->new (' 1 '), 0,0,0);
-$hbox->pack_start (Gtk2::Label->new (' 2 '), 0,0,0);
-
-$hbox->pack_end (Gtk2::Label->new (' 3 '), 0,0,0);
-$hbox->pack_end (Gtk2::Label->new (' 4 '), 0,0,0);
-
-$toplevel->show_all;
-Gtk2->main();
 exit 0;
+

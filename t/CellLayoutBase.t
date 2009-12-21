@@ -1,4 +1,6 @@
-# Copyright 2008 Kevin Ryde
+#!/usr/bin/perl
+
+# Copyright 2008, 2009 Kevin Ryde
 
 # This file is part of Gtk2-Ex-CellLayout-Base.
 #
@@ -15,15 +17,13 @@
 # You should have received a copy of the GNU General Public License along
 # with Gtk2-Ex-CellLayout-Base.  If not, see <http://www.gnu.org/licenses/>.
 
-use strict;
-use warnings;
-use Test::More tests => 16;
+use 5.008;
 
 package MyViewer;
 use strict;
 use warnings;
-use Gtk2 1.180;
 use base 'Gtk2::Ex::CellLayout::Base';
+use Gtk2 1.180; # for Gtk2::CellLayout interface
 use Glib::Object::Subclass
   Gtk2::DrawingArea::,
   interfaces => [ 'Gtk2::CellLayout' ];
@@ -34,12 +34,54 @@ sub PACK_START {
   $self->SUPER::PACK_START ($cell, $expand);
 }
 
+package MyViewerWithISA;
+use strict;
+use warnings;
+use Gtk2 1.180; # for Gtk2::CellLayout interface
+
+our @ISA;
+use Glib::Object::Subclass
+  'Gtk2::DrawingArea',
+  interfaces => [ 'Gtk2::CellLayout' ];
+push @ISA, 'Gtk2::Ex::CellLayout::Base';
+
+sub PACK_START {
+  my ($self, $cell, $expand) = @_;
+  $self->{'myviewer-with-isa-subclass'} = 'hello from MyViewerWithISA';
+  $self->SUPER::PACK_START ($cell, $expand);
+}
+
+#------------------------------------------------------------------------------
 package main;
-use Gtk2;
+use strict;
+use warnings;
+use Test::More tests => 25;
 
-ok ($Gtk2::Ex::CellLayout::Base::VERSION >= 1);
-ok (Gtk2::Ex::CellLayout::Base->VERSION >= 1);
+use FindBin;
+use File::Spec;
+use lib File::Spec->catdir($FindBin::Bin,'inc');
+use MyTestHelpers;
 
+SKIP: { eval 'use Test::NoWarnings; 1'
+          or skip 'Test::NoWarnings not available', 1; }
+
+my $want_version = 4;
+ok ($Gtk2::Ex::CellLayout::Base::VERSION >= $want_version,
+    'VERSION variable');
+ok (Gtk2::Ex::CellLayout::Base->VERSION  >= $want_version,
+    'VERSION class method');
+ok (eval { Gtk2::Ex::CellLayout::Base->VERSION($want_version); 1 },
+    "VERSION class check $want_version");
+ok (! eval { Gtk2::Ex::CellLayout::Base->VERSION($want_version + 1000); 1 },
+    "VERSION class check " . ($want_version + 1000));
+
+require Gtk2;
+MyTestHelpers::glib_gtk_versions();
+
+my $have_get_cells = MyViewer->can('get_cells');
+diag "have_get_cells: ",($have_get_cells ? "yes" : "no");
+
+#------------------------------------------------------------------------------
 {
   my $viewer = MyViewer->new;
   my $renderer = Gtk2::CellRendererText->new;
@@ -48,7 +90,31 @@ ok (Gtk2::Ex::CellLayout::Base->VERSION >= 1);
   is ($viewer->{'myviewer-subclass'}, 'hello from MyViewer');
   is_deeply ([$viewer->GET_CELLS], [$renderer],
              'GET_CELLS one renderer');
+
+ SKIP: {
+    $have_get_cells or skip 'due to no ->get_cells() method', 1;
+    is_deeply ([$viewer->get_cells], [$renderer],
+               'get_cells() one renderer');
+  }
 }
+
+{
+  my $viewer = MyViewerWithISA->new;
+  my $renderer = Gtk2::CellRendererText->new;
+  $viewer->pack_start ($renderer, 0);
+
+  is ($viewer->{'myviewer-with-isa-subclass'}, 'hello from MyViewerWithISA');
+  is_deeply ([$viewer->GET_CELLS], [$renderer],
+             'GET_CELLS() one renderer');
+ SKIP: {
+    $have_get_cells or skip 'due to no ->get_cells() method', 1;
+    is_deeply ([$viewer->get_cells], [$renderer],
+               'get_cells() one renderer');
+  }
+}
+
+#------------------------------------------------------------------------------
+# reorder()
 
 {
   my $viewer = MyViewer->new;
@@ -89,6 +155,9 @@ ok (Gtk2::Ex::CellLayout::Base->VERSION >= 1);
   is_deeply ([$viewer->GET_CELLS], [$r2, $r1, $r3]);
 }
 
+#------------------------------------------------------------------------------
+# pack_start() expand flag
+
 {
   my $viewer = MyViewer->new;
   my $renderer = Gtk2::CellRendererText->new;
@@ -103,6 +172,9 @@ ok (Gtk2::Ex::CellLayout::Base->VERSION >= 1);
   ok ($viewer->{'cellinfo_list'}->[0]->{'expand'},
       'expand true');
 }
+
+#------------------------------------------------------------------------------
+# _set_cell_data()
 
 {
   my $liststore = Gtk2::ListStore->new ('Glib::String');
@@ -128,5 +200,26 @@ ok (Gtk2::Ex::CellLayout::Base->VERSION >= 1);
   is ($renderer->get('text'), 'Blah',
       'attribute setting gone after clear_attributes()');
 }
+
+#------------------------------------------------------------------------------
+# _cellinfo_starts, _cellinfo_ends
+
+{
+  my $viewer = MyViewer->new;
+  my $r1 = Gtk2::CellRendererText->new; $viewer->pack_start ($r1, 0);
+  my $r2 = Gtk2::CellRendererText->new; $viewer->pack_end ($r2, 0);
+  my $r3 = Gtk2::CellRendererText->new; $viewer->pack_end ($r3, 0);
+  my $r4 = Gtk2::CellRendererText->new; $viewer->pack_start ($r4, 0);
+  my $r5 = Gtk2::CellRendererText->new; $viewer->pack_start ($r5, 0);
+  my $r6 = Gtk2::CellRendererText->new; $viewer->pack_end ($r6, 0);
+
+  is_deeply ([ map {$_->{'cell'}} $viewer->_cellinfo_starts ],
+             [ $r1, $r4, $r5 ],
+             '_cellinfo_starts() 1,4,5');
+  is_deeply ([ map {$_->{'cell'}} $viewer->_cellinfo_ends ],
+             [ $r2, $r3, $r6 ],
+             '_cellinfo_ends() 2,3,6');
+}
+
 
 exit 0;

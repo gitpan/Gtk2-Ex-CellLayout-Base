@@ -1,5 +1,5 @@
 This file contains message digests of all files listed in MANIFEST,
-signed via the Module::Signature module, version 0.55.
+signed via the Module::Signature module, version 0.61.
 
 To verify the content in this distribution, first make sure you have
 Module::Signature installed, then type:
@@ -14,30 +14,39 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 8624bcdae55baeef00cd11d5dfcfa60f68710a02 COPYING
-SHA1 cccc5d4ba6a4d565695f05e503380470998931ca Changes
-SHA1 97ff2a8dba74097c411cbd8aeceb234b6414c6d5 MANIFEST
-SHA1 4ae939d570b03e8c1c5540c1180dd397bef1df3c META.yml
-SHA1 69e36710bc228f17a2a4ca0e0a522e1f5f329795 Makefile.PL
-SHA1 817ef628501483b1d892e2284dae3e501a98acc0 README
-SHA1 ad567baa5a0e706ea4bbaf5b5cea462bc022cc5f debian/changelog
-SHA1 1b6453892473a467d07372d45eb05abc2031647a debian/compat
-SHA1 95e599fe5e53900194ee13ac49cb9728753cef31 debian/control
-SHA1 56133eafc2343d01193dacc189ab4d3b39850852 debian/copyright
+SHA1 842745cb706f8f2126506f544492f7a80dbe29b3 COPYING
+SHA1 47e23beedb3b18d2c16676c782c05136d6879293 Changes
+SHA1 af5a7d29ff85537a76f06fdbf327a4dbb9b9ec23 MANIFEST
+SHA1 bb78fa7bf2dfebdda59c9efb64db51b173fb9e2f MANIFEST.SKIP
+SHA1 852a16097940191cebef586efc0b20a6ff2b9317 META.yml
+SHA1 cd9797ba729f7e06274139082be4a2c301f3d61f Makefile.PL
+SHA1 62966bf74949453a5203890099f3ce29c4b67722 README
+SHA1 c80c7a3a3323b3ced539bd003abd36ccb2f5e16a debian/changelog
+SHA1 ac3478d69a3c81fa62e60f5c3696165a4e5e6ac4 debian/compat
+SHA1 da253446b88b25cdf05fadbc8906f81035f9d39a debian/control
+SHA1 03828ffdaf85fe2a3652f4de395dc7cfa36dd2b1 debian/copyright
 SHA1 5f420c850e369abc77a7281443fbac718b827b67 debian/rules
-SHA1 fdeee5d47c706610af41454b6c24d5f2346481d9 debian/watch
-SHA1 7cf7a7e4fdfbde758f4713001992273d40b2c10b devel/box-pack.pl
-SHA1 87ecf91bf83b735d9346f593c3fc058d9a44349f devel/cellview-pack.pl
-SHA1 706d6b408c2f4d77b6771b6dd40d9cd8967deb5c examples/builder.pl
-SHA1 076561637b21fb17665da29a7320b9903ca0e785 examples/cellview.pl
-SHA1 070d57f90cc64247aa64e7595e79c9ce7e1972f6 lib/Gtk2/Ex/CellLayout/Base.pm
-SHA1 0718471a09c8ac4f9d73a7985624e4ad3964e4e4 lib/Gtk2/Ex/CellLayout/BuildAttributes.pm
-SHA1 63800a42fc5e6358798f8b65b99dfbceb81ddf80 t/CellLayoutBase.t
-SHA1 a661a39e55a4127aecb1b97a631c4f01f7dce8c6 t/pod.t
+SHA1 3c09752a3f8da737cc3bb65aba06f06ccd8fd820 debian/watch
+SHA1 bb5173cd8d0e6f8ef27615c8ca81b5b39ede23ac devel/box-pack.pl
+SHA1 178945405384bd3ba7af52cf1d40812043b50003 devel/cellview-pack.pl
+SHA1 a2d1f3718ec6dbc821ae50316481b43e2efac313 examples/builder.pl
+SHA1 b7b963050eb21de9fd9e85f3014dcd283bd4da0e examples/cellview.pl
+SHA1 d3fbfce26c102ec67851cf8406aa06d1ea11063e inc/MyMakeMakerExtras.pm
+SHA1 8e7135d2f4d47aa887d445680ae286400639f7b6 inc/my_pod2html
+SHA1 ceca30a07c2db165242f94adff5590d4dfb3e96b lib/Gtk2/Ex/CellLayout/Base.pm
+SHA1 cdf8cad2f7153686a6f617389ac1dfb16a9d07dc lib/Gtk2/Ex/CellLayout/BuildAttributes.pm
+SHA1 378b932305fb60823467c2af3c771fe3fc295a13 t/0-META-read.t
+SHA1 a343ed4dce96d05de51eed1ec065911584b96fce t/0-Test-DistManifest.t
+SHA1 bba0dc087cbe64d8f100ab77e6cef061c0bebf27 t/0-Test-Pod.t
+SHA1 5fa94e1e88e44064d1e6b21c88a4c9374a17bfd1 t/0-Test-Synopsis.t
+SHA1 d369522d8a9a887fdf1a1e14cb83e25fa2188727 t/0-Test-YAML-Meta.t
+SHA1 aa1551559fd871f1cd529b37c4e9be3c15903747 t/BuildAttributes.t
+SHA1 4d7aea78cb9b1cb1e00598982f48b6a8f6ec4b66 t/CellLayoutBase.t
+SHA1 f1effdaf8e1b594668490ce2d0e3375ac45443cc t/inc/MyTestHelpers.pm
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-iD8DBQFIbU6/LFMCIV9q3ToRAvy6AJ9i28+IucXWBXTqYMpOWYQwKUE0DQCfeihM
-yJ6XSADS5sxBMKN4P6fnKnc=
-=chdI
+iD8DBQFLLyArLFMCIV9q3ToRAlZ2AJ93SXga68fk9qORC5pXL9WJurzM1QCfUax2
+5T99OsPozNri3o0236BHcCM=
+=JORx
 -----END PGP SIGNATURE-----
