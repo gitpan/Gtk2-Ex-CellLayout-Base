@@ -1,5 +1,5 @@
 This file contains message digests of all files listed in MANIFEST,
-signed via the Module::Signature module, version 0.61.
+signed via the Module::Signature module, version 0.66.
 
 To verify the content in this distribution, first make sure you have
 Module::Signature installed, then type:
@@ -15,38 +15,40 @@ not run its Makefile.PL or Build.PL.
 Hash: SHA1
 
 SHA1 842745cb706f8f2126506f544492f7a80dbe29b3 COPYING
-SHA1 47e23beedb3b18d2c16676c782c05136d6879293 Changes
-SHA1 af5a7d29ff85537a76f06fdbf327a4dbb9b9ec23 MANIFEST
-SHA1 bb78fa7bf2dfebdda59c9efb64db51b173fb9e2f MANIFEST.SKIP
-SHA1 852a16097940191cebef586efc0b20a6ff2b9317 META.yml
+SHA1 1cb7ac026be924270ee2dfb99cb095fe3ba2a9af Changes
+SHA1 903dfcac5f98382fd76e9af2eecce887584573b9 MANIFEST
+SHA1 e6e7c2904ea5d300c0ddf70fc5a80f5005229aa9 MANIFEST.SKIP
+SHA1 a0b04a7346a0f295a1de9e1521bf2a2a63ca0889 META.yml
 SHA1 cd9797ba729f7e06274139082be4a2c301f3d61f Makefile.PL
 SHA1 62966bf74949453a5203890099f3ce29c4b67722 README
-SHA1 c80c7a3a3323b3ced539bd003abd36ccb2f5e16a debian/changelog
+SHA1 ef4af4dbf7ddba18249a70f2b4c4675c19572718 debian/changelog
 SHA1 ac3478d69a3c81fa62e60f5c3696165a4e5e6ac4 debian/compat
-SHA1 da253446b88b25cdf05fadbc8906f81035f9d39a debian/control
-SHA1 03828ffdaf85fe2a3652f4de395dc7cfa36dd2b1 debian/copyright
+SHA1 33d938d0c809a8978f2d361fe8b238d770e9cac5 debian/control
+SHA1 d64838d5dccdb92de3c6bdbc6052f0b5b1c5ed30 debian/copyright
 SHA1 5f420c850e369abc77a7281443fbac718b827b67 debian/rules
+SHA1 61652cd1568dcf2614df833eba241755eee34e89 debian/source/format
 SHA1 3c09752a3f8da737cc3bb65aba06f06ccd8fd820 debian/watch
-SHA1 bb5173cd8d0e6f8ef27615c8ca81b5b39ede23ac devel/box-pack.pl
-SHA1 178945405384bd3ba7af52cf1d40812043b50003 devel/cellview-pack.pl
-SHA1 a2d1f3718ec6dbc821ae50316481b43e2efac313 examples/builder.pl
-SHA1 b7b963050eb21de9fd9e85f3014dcd283bd4da0e examples/cellview.pl
-SHA1 d3fbfce26c102ec67851cf8406aa06d1ea11063e inc/MyMakeMakerExtras.pm
-SHA1 8e7135d2f4d47aa887d445680ae286400639f7b6 inc/my_pod2html
-SHA1 ceca30a07c2db165242f94adff5590d4dfb3e96b lib/Gtk2/Ex/CellLayout/Base.pm
-SHA1 cdf8cad2f7153686a6f617389ac1dfb16a9d07dc lib/Gtk2/Ex/CellLayout/BuildAttributes.pm
-SHA1 378b932305fb60823467c2af3c771fe3fc295a13 t/0-META-read.t
-SHA1 a343ed4dce96d05de51eed1ec065911584b96fce t/0-Test-DistManifest.t
-SHA1 bba0dc087cbe64d8f100ab77e6cef061c0bebf27 t/0-Test-Pod.t
-SHA1 5fa94e1e88e44064d1e6b21c88a4c9374a17bfd1 t/0-Test-Synopsis.t
-SHA1 d369522d8a9a887fdf1a1e14cb83e25fa2188727 t/0-Test-YAML-Meta.t
-SHA1 aa1551559fd871f1cd529b37c4e9be3c15903747 t/BuildAttributes.t
-SHA1 4d7aea78cb9b1cb1e00598982f48b6a8f6ec4b66 t/CellLayoutBase.t
-SHA1 f1effdaf8e1b594668490ce2d0e3375ac45443cc t/inc/MyTestHelpers.pm
+SHA1 bac3cfbd8f69db4f2004ad4fb490d7898ae61efc devel/box-pack.pl
+SHA1 9f1ed883778e5732530226c1cfe8d3e1a8b9842c devel/cellview-pack.pl
+SHA1 399e0ae01b3fa9f7e45d6de17d97accde10bc6f1 examples/builder.pl
+SHA1 bec23332398df29d6e96de7b5059de51f1bdb2a8 examples/cellview.pl
+SHA1 4fb53efe76b3b2264eaa4cf7780cb0c4923e18a5 inc/MyMakeMakerExtras.pm
+SHA1 692a1ddc2ca6b98cac7b48ea40bc1ac1509e8ed9 inc/my_pod2html
+SHA1 e4874ea5162805f749de6048a5c66f53757cd2d7 lib/Gtk2/Ex/CellLayout/Base.pm
+SHA1 be9bca9bca896e098cee3d405cba3e611ed1c1e4 lib/Gtk2/Ex/CellLayout/BuildAttributes.pm
+SHA1 9525bb076154e96bca65295614e0aebca9863468 t/BuildAttributes.t
+SHA1 49cfe017bb57a520754a556baa75337ad8d94e80 t/CellLayoutBase.t
+SHA1 5e5680b471811244fe93571efc23e7b6089cac3b t/MyTestHelpers.pm
+SHA1 5e5680b471811244fe93571efc23e7b6089cac3b t/inc/MyTestHelpers.pm
+SHA1 9127f78a0dfa04976acbb979dd7862ef59a74c58 xt/0-META-read.t
+SHA1 37abd43b41068804ea4bb099fdd89af21be82926 xt/0-Test-DistManifest.t
+SHA1 8f93fb4c8f0424a4442cc93c9a2e86342ef55281 xt/0-Test-Pod.t
+SHA1 1de8f07883f6bf1a2ef79f2cb8adf1deb3f61cee xt/0-Test-Synopsis.t
+SHA1 fb517c2fae5ddac559318bf6a224949115ea3129 xt/0-Test-YAML-Meta.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iD8DBQFLLyArLFMCIV9q3ToRAlZ2AJ93SXga68fk9qORC5pXL9WJurzM1QCfUax2
-5T99OsPozNri3o0236BHcCM=
-=JORx
+iD8DBQFM3aiNLFMCIV9q3ToRAvqDAKCPfXlh8xhAHZmU+SWRoQJeSRibDgCeIUAM
+/kCOTjQ7AqYduCY/QrFz8D4=
+=A0JO
 -----END PGP SIGNATURE-----

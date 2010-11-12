@@ -1,4 +1,4 @@
-# Copyright 2007, 2008, 2009 Kevin Ryde
+# Copyright 2007, 2008, 2009, 2010 Kevin Ryde
 
 # This file is part of Gtk2-Ex-CellLayout-Base.
 #
@@ -24,7 +24,7 @@ use List::Util;
 use Gtk2;
 use Glib::Ex::FreezeNotify;
 
-our $VERSION = 4;
+our $VERSION = 5;
 
 
 #------------------------------------------------------------------------------
@@ -278,6 +278,8 @@ sub CUSTOM_TAG_START {
 1;
 __END__
 
+=for stopwords CellLayout Gtk2-Ex-CellLayout-Base Gtk2-Perl Gtk superclass Buildable renderers arrayref hashref renderer enum BUILDABLE conditionalize eg buildable superclasses natively Ryde
+
 =head1 NAME
 
 Gtk2::Ex::CellLayout::Base -- basic Gtk2::CellLayout implementation functions
@@ -321,14 +323,14 @@ CellLayout interface (see L<Gtk2::CellLayout>).
     REORDER ($self, $cell, $position)
     @list = GET_CELLS ($self)
 
-The functions maintain a list of C<Gtk2::CellRenderer> objects packed into
-the viewer widget, with associated attribute settings and/or data setup
+The functions maintain a list of C<Gtk2::CellRenderer> objects in the viewer
+widget, together with associated attribute settings and/or data setup
 function.
 
 C<CellLayout::Base> is designed as a multiple-inheritance mix-in to add to
 your C<@ISA>.  C<use base> per the synopsis above (see L<base>) is one way
-to do that.  If you set C<@ISA> yourself be careful not to lose what
-C<Glib::Object::Subclass> sets up.
+to do that.  (If you set C<@ISA> yourself be careful not to lose what
+C<Glib::Object::Subclass> sets up.)
 
 You can enhance or override some of C<CellLayout::Base> by writing your own
 versions of the functions, and then chain up (or not) to the originals with
@@ -375,14 +377,14 @@ doesn't normally arise in the context of a viewer widget.
 
 C<attributes> is a hash table of property name to column number established
 by C<add_attribute> and C<set_attributes>.  C<datafunc> and
-C<datafunc_userdata> come from C<set_cell_data_func>.  All these are used
+C<datafunc_userdata> come from C<set_cell_data_func>.  These are all used
 when preparing the renderers to draw a particular row of the
 C<Gtk2::TreeModel>.
 
 The widget C<size_request> and C<expose> operations are the two most obvious
 places the cell information is needed.  Both will prepare the renderers with
-data from the model, then ask the size and/or do some drawing.  The
-following function is designed to prepare the renderers.
+data from the model, then ask their sizes or do some drawing.  The following
+function is designed to prepare the renderers.
 
 =over 4
 
@@ -442,10 +444,11 @@ needed.
 =item C<< $self->_cellinfo_ends >>
 
 Return the C<cellinfo_list> elements which are from either C<pack_start> or
-C<pack_end>, respectively.  These are simply greps of C<cellinfo_list>
+C<pack_end> respectively.  These are simply greps of C<cellinfo_list>
 looking for the C<pack> field set to C<start> or C<end>.  In an expose or
 similar you work across the starts from the left then the ends from the
-right (towards the centre, and usually reversed in C<rtl> mode).
+right, towards the centre (or usually reversed to "start"s on the right in
+C<rtl> mode).
 
     my $x = 0;
     foreach my $cellinfo ($self->_cellinfo_starts) {
@@ -511,7 +514,7 @@ as settable properties, but best let Gtk take the lead on that.)
 
 As of Gtk2-Perl 1.221 there's no chaining up to tag handlers in widget
 superclasses, which means a buildable interface like this loses anything
-those superclasses add to C<GtkBuilder>'s standard forms.  In particular for
+those superclasses add to C<GtkBuilder>'s standard tags.  In particular for
 example you loose C<< <accelerator> >> and C<< <accessibility> >> from
 C<GtkWidget>.  Not sure how bad that is in practice.  Hopefully a future
 Gtk2-Perl will allow chaining, or do it automatically.
@@ -526,28 +529,28 @@ flag and calculated renderer width of C<TreeViewColumn>.
 
 The C<_set_cell_data> function provided above is also similar to what the
 core widgets do.  C<Gtk2::TreeViewColumn> even makes its version of that
-public as C<< $column->cell_set_cell_data >>.  It's probably works equally
-well to setup one renderer at a time as it's used, rather than all at once;
-so perhaps in the future C<Gtk2::Ex::CellLayout::Base> could offer something
+public as C<< $column->cell_set_cell_data >>.  It probably works equally
+well to setup one renderer at a time as it's used, rather than all at once.
+Perhaps in the future C<Gtk2::Ex::CellLayout::Base> could offer something
 for that, maybe even as a method on the C<cellinfo_list> elements if they
 became objects as such.
 
 The display order intended by C<pack_start> and C<pack_end> isn't described
-very well in the C<GtkCellLayout> documentation, but it's the same as
-C<GtkBox> so see there for details.  You might wonder why C<cellinfo_list>
-isn't maintained with starts and ends separated in the first place, since
-that's wanted for drawing.  The reason is the C<reorder> method works in
-terms of renderers in the order added, with C<pack_start> and C<pack_end>
-ones together, counting from 0.  This makes more sense in C<GtkBox> where
-the pack type can be changed later (something C<CellLayout> doesn't do, or
-not natively).
+very well in the C<GtkCellLayout> interface documentation, but it's the same
+as C<GtkBox> so see there for details.  You might wonder why
+C<cellinfo_list> isn't maintained with starts and ends separated in the
+first place, since that's wanted for drawing.  The reason is the C<reorder>
+method works on the renderers in the order added, counting from 0, with
+C<pack_start> and C<pack_end> together.  This makes sense in C<GtkBox> where
+the pack type can be changed later, though for C<CellLayout> the pack type
+doesn't change (or not natively at least).
 
 The C<GET_CELLS> method is always provided, though it's only used if
-Gtk2-Perl is compiled against Gtk version 2.12 or higher which is when the
-C<gtk_cell_layout_get_cells> function was introduced.  Within viewer widget
-code if you want all the renderers (which is simply the C<cell> fields
-picked out of C<cellinfo_list>) then you can call capital C<GET_CELLS>
-rather than worry whether lowercase C<get_cells> is available or not.
+Gtk2-Perl is compiled against Gtk version 2.12 or higher which introduces
+C<gtk_cell_layout_get_cells>.  If you want all the renderers within your
+widget code (which means simply the C<cell> fields picked out of
+C<cellinfo_list>) then you can call capital C<GET_CELLS> rather than worry
+whether lowercase C<get_cells> is available or not.
 
 =head1 SEE ALSO
 
@@ -559,7 +562,7 @@ L<http://user42.tuxfamily.org/gtk2-ex-celllayout-base/>
 
 =head1 LICENSE
 
-Copyright 2007, 2008, 2009 Kevin Ryde
+Copyright 2007, 2008, 2009, 2010 Kevin Ryde
 
 Gtk2-Ex-CellLayout-Base is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as published by

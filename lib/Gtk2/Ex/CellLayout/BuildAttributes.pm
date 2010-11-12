@@ -1,4 +1,4 @@
-# Copyright 2007, 2008, 2009 Kevin Ryde
+# Copyright 2007, 2008, 2009, 2010 Kevin Ryde
 
 # This file is part of Gtk2-Ex-CellLayout-Base.
 #
@@ -21,7 +21,7 @@ use strict;
 use warnings;
 use Gtk2;
 
-our $VERSION = 4;
+our $VERSION = 5;
 
 # set this to 1 for some diagnostic prints
 use constant DEBUG => 0;
@@ -68,6 +68,8 @@ sub END_ELEMENT {
 
 1;
 __END__
+
+=for stopwords Gtk2-Ex-CellLayout-Base Gtk2-Perl renderer BuildAttributes Ryde Gtk CellLayout
 
 =head1 NAME
 
@@ -117,7 +119,7 @@ L<http://user42.tuxfamily.org/gtk2-ex-celllayout-base/>
 
 =head1 LICENSE
 
-Copyright 2007, 2008, 2009 Kevin Ryde
+Copyright 2007, 2008, 2009, 2010 Kevin Ryde
 
 Gtk2-Ex-CellLayout-Base is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as published by

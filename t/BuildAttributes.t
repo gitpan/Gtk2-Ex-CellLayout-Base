@@ -1,6 +1,6 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
-# Copyright 2009 Kevin Ryde
+# Copyright 2009, 2010 Kevin Ryde
 
 # This file is part of Gtk2-Ex-CellLayout-Base.
 #
@@ -19,20 +19,26 @@
 
 use strict;
 use warnings;
-use Gtk2::Ex::CellLayout::BuildAttributes;
 use Test::More tests => 5;
 
-SKIP: { eval 'use Test::NoWarnings; 1'
-          or skip 'Test::NoWarnings not available', 1; }
+BEGIN {
+ SKIP: { eval 'use Test::NoWarnings; 1'
+           or skip 'Test::NoWarnings not available', 1; }
+}
 
-my $want_version = 4;
-cmp_ok ($Gtk2::Ex::CellLayout::BuildAttributes::VERSION, '>=', $want_version,
-        'VERSION variable');
-cmp_ok (Gtk2::Ex::CellLayout::BuildAttributes->VERSION,  '>=', $want_version,
-        'VERSION class method');
-{ ok (eval { Gtk2::Ex::CellLayout::BuildAttributes->VERSION($want_version); 1 }, "VERSION class check $want_version");
+require Gtk2::Ex::CellLayout::BuildAttributes;
+
+{
+  my $want_version = 5;
+  is ($Gtk2::Ex::CellLayout::BuildAttributes::VERSION, $want_version,
+      'VERSION variable');
+  is (Gtk2::Ex::CellLayout::BuildAttributes->VERSION, $want_version,
+      'VERSION class method');
+
+  ok (eval { Gtk2::Ex::CellLayout::BuildAttributes->VERSION($want_version); 1 }, "VERSION class check $want_version");
   my $check_version = $want_version + 1000;
   ok (! eval { Gtk2::Ex::CellLayout::BuildAttributes->VERSION($check_version); 1 }, "VERSION class check $check_version");
+
 }
 
 exit 0;

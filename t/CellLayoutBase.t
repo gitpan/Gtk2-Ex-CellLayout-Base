@@ -1,6 +1,6 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
-# Copyright 2008, 2009 Kevin Ryde
+# Copyright 2008, 2009, 2010 Kevin Ryde
 
 # This file is part of Gtk2-Ex-CellLayout-Base.
 #
@@ -18,54 +18,55 @@
 # with Gtk2-Ex-CellLayout-Base.  If not, see <http://www.gnu.org/licenses/>.
 
 use 5.008;
-
-package MyViewer;
 use strict;
 use warnings;
-use base 'Gtk2::Ex::CellLayout::Base';
-use Gtk2 1.180; # for Gtk2::CellLayout interface
-use Glib::Object::Subclass
-  Gtk2::DrawingArea::,
-  interfaces => [ 'Gtk2::CellLayout' ];
 
-sub PACK_START {
-  my ($self, $cell, $expand) = @_;
-  $self->{'myviewer-subclass'} = 'hello from MyViewer';
-  $self->SUPER::PACK_START ($cell, $expand);
+{
+  package MyViewer;
+  use base 'Gtk2::Ex::CellLayout::Base';
+  use Gtk2 1.180; # for Gtk2::CellLayout interface
+  use Glib::Object::Subclass
+    'Gtk2::DrawingArea',
+      interfaces => [ 'Gtk2::CellLayout' ];
+
+  sub PACK_START {
+    my ($self, $cell, $expand) = @_;
+    $self->{'myviewer-subclass'} = 'hello from MyViewer';
+    $self->SUPER::PACK_START ($cell, $expand);
+  }
 }
+{
+  package MyViewerWithISA;
+  use Gtk2 1.180; # for Gtk2::CellLayout interface
 
-package MyViewerWithISA;
-use strict;
-use warnings;
-use Gtk2 1.180; # for Gtk2::CellLayout interface
+  our @ISA;
+  use Glib::Object::Subclass
+    'Gtk2::DrawingArea',
+      interfaces => [ 'Gtk2::CellLayout' ];
+  push @ISA, 'Gtk2::Ex::CellLayout::Base';
 
-our @ISA;
-use Glib::Object::Subclass
-  'Gtk2::DrawingArea',
-  interfaces => [ 'Gtk2::CellLayout' ];
-push @ISA, 'Gtk2::Ex::CellLayout::Base';
-
-sub PACK_START {
-  my ($self, $cell, $expand) = @_;
-  $self->{'myviewer-with-isa-subclass'} = 'hello from MyViewerWithISA';
-  $self->SUPER::PACK_START ($cell, $expand);
+  sub PACK_START {
+    my ($self, $cell, $expand) = @_;
+    $self->{'myviewer-with-isa-subclass'} = 'hello from MyViewerWithISA';
+    $self->SUPER::PACK_START ($cell, $expand);
+  }
 }
 
 #------------------------------------------------------------------------------
-package main;
-use strict;
-use warnings;
+
 use Test::More tests => 25;
+
+BEGIN {
+ SKIP: { eval 'use Test::NoWarnings; 1'
+           or skip 'Test::NoWarnings not available', 1; }
+}
 
 use FindBin;
 use File::Spec;
 use lib File::Spec->catdir($FindBin::Bin,'inc');
 use MyTestHelpers;
 
-SKIP: { eval 'use Test::NoWarnings; 1'
-          or skip 'Test::NoWarnings not available', 1; }
-
-my $want_version = 4;
+my $want_version = 5;
 ok ($Gtk2::Ex::CellLayout::Base::VERSION >= $want_version,
     'VERSION variable');
 ok (Gtk2::Ex::CellLayout::Base->VERSION  >= $want_version,

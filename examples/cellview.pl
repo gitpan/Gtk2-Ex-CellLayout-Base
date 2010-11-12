@@ -1,6 +1,6 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
-# Copyright 2007, 2008, 2009 Kevin Ryde
+# Copyright 2007, 2008, 2009, 2010 Kevin Ryde
 
 # This file is part of Gtk2-Ex-CellLayout-Base.
 #
@@ -32,6 +32,7 @@
 
 
 package PoorMansCellView;
+use 5.008;
 use strict;
 use warnings;
 use List::Util qw(min max);
@@ -59,7 +60,7 @@ use Glib::Object::Subclass
                    'Row number in the model to display.',
                    0, INT_MAX,
                    0, # default
-                   Glib::G_PARAM_READWRITE)
+                   Glib::G_PARAM_READWRITE),
                 ];
 
 use constant DEBUG => 0;
